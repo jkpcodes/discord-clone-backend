@@ -45,4 +45,7 @@ mongoose.connect(process.env.MONGO_URI, {
     process.exit(1);
   });
 
+
+export { server };
+
 export default app;

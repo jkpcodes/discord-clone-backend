@@ -1,9 +1,9 @@
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 
 // Load test environment variables
 dotenv.config({ path: '.env.test' });
 
-module.exports = {
+export default {
   Memory: true,
   db: {
     uri: process.env.TEST_MONGODB_URI || 'mongodb://localhost:27017/test',
