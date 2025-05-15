@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   // Automatically clear mock calls and instances between every test
   clearMocks: true,
 
@@ -19,24 +19,19 @@ export default {
   // The test environment that will be used for testing
   testEnvironment: "node",
 
-  // A list of paths to directories that Jest should use to search for files in
-  roots: ["<rootDir>/tests"],
-
   // The glob patterns Jest uses to detect test files
   testMatch: ["**/__tests__/**/*.js", "**/?(*.)+(spec|test).js"],
 
   // An array of file extensions your modules use
   moduleFileExtensions: ["js", "json"],
 
-  // Setup files after environment is loaded
-  setupFilesAfterEnv: ["<rootDir>/test-setup.js"],
+  // NOTE: Currently using CJS for globalSetup, globalTeardown, and setupFilesAfterEnv since Jest support for ESM is still experimental
+  globalSetup: "<rootDir>/test/globalSetup.cjs",
+  globalTeardown: "<rootDir>/test/globalTeardown.cjs",
+  setupFilesAfterEnv: ["<rootDir>/test/setup.cjs"],
 
-  // Transform files to support ES modules
-  transform: {},
-
-  // Enable ES modules
-  extensionsToTreatAsEsm: ['.js'],
+  // extensionsToTreatAsEsm: ['.js'],
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1'
-  }
+    // '^(\\.{1,2}/.*)\\.js$': '$1'
+  },
 }; 

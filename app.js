@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import authRoutes from './routes/authRoutes.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -15,6 +16,8 @@ app.use(helmet());
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
+
+app.use('/api/auth', authRoutes);
 
 // Basic 404 handler
 app.use((req, res) => {
