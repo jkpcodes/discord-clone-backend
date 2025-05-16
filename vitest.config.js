@@ -4,5 +4,6 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true, // optional: allows using test/expect/describe without imports
+    setupFiles: ['./test/setup.js'],
   },
 });

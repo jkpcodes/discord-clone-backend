@@ -9,6 +9,9 @@ import authRoutes from './routes/authRoutes.js';
 // Load environment variables from .env file
 dotenv.config();
 
+console.log('process.env.MONGO_URI', process.env.MONGO_URI);
+console.log('process.env.JWT_SECRET', process.env.JWT_SECRET);
+
 const app = express();
 
 app.use(cors());
@@ -21,17 +24,18 @@ app.use('/api/auth', authRoutes);
 
 // Basic 404 handler
 app.use((req, res) => {
-    res.status(404).json({ message: 'Not found' });
+  res.status(404).json({ message: 'Not found' });
 });
 
 const PORT = process.env.PORT || process.env.API_PORT;
 
 const server = http.createServer(app);
 
-mongoose.connect(process.env.MONGO_URI, {
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
-})
+mongoose
+  .connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+  })
   .then(() => {
     console.log('Successfully connected to MongoDB.');
     // Only start the server if the connection to the database is successful
@@ -44,7 +48,6 @@ mongoose.connect(process.env.MONGO_URI, {
     console.error('Error connecting to MongoDB:', err);
     process.exit(1);
   });
-
 
 export { server };
 
