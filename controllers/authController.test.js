@@ -1,10 +1,11 @@
-import { register } from './authController.js';
+import { register, login } from './authController.js';
 import bcrypt from 'bcryptjs';
 
 vi.mock('../models/user.js', () => ({
   User: {
     exists: vi.fn(),
     create: vi.fn(),
+    findOne: vi.fn(),
   },
 }));
 
@@ -22,11 +23,13 @@ describe('Auth Controller', () => {
   };
 
   let hashSpy;
+  let compareSpy;
   const bcryptHashPattern = /^\$2[aby]\$\d+\$/;
 
   beforeEach(() => {
     vi.clearAllMocks();
     hashSpy = vi.spyOn(bcrypt, 'hash');
+    compareSpy = vi.spyOn(bcrypt, 'compare');
   });
 
   describe('Register test', () => {
@@ -131,6 +134,96 @@ describe('Auth Controller', () => {
           email: sampleReq.body.email.trim().toLowerCase(),
           password: expect.stringMatching(bcryptHashPattern),
         });
+      });
+    });
+  });
+
+  describe('Login test', () => {
+    let sut = login;
+    const sampleReq = {
+      body: {
+        email: 'testuser@example.com',
+        password: 'Password123',
+      },
+    };
+
+    describe('Error cases', () => {
+      it('should return 400 "Email or password is incorrect" when user does not exist', async () => {
+        user.User.findOne.mockResolvedValue(undefined);
+
+        await sut(sampleReq, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(400);
+        expect(mockResponse.json).toHaveBeenCalledWith({
+          message: 'Email or password is incorrect',
+        });
+        expect(compareSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 500 "Server error occurred" when server error occurs in User.findOne', async () => {
+        user.User.findOne.mockRejectedValue(new Error('Server error'));
+
+        await sut(sampleReq, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(500);
+        expect(mockResponse.json).toHaveBeenCalledWith({
+          message: 'Server error occurred',
+        });
+        expect(compareSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 "Email or password is incorrect" when password is incorrect', async () => {
+        let incorrectPassword = bcrypt.hashSync('IncorrectPassword', 10);
+        user.User.findOne.mockResolvedValue({
+          password: incorrectPassword,
+        });
+
+        await sut(sampleReq, mockResponse);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(400);
+        expect(mockResponse.json).toHaveBeenCalledWith({
+          message: 'Email or password is incorrect',
+        });
+        expect(compareSpy).toHaveBeenCalledWith(
+          sampleReq.body.password,
+          incorrectPassword
+        );
+      });
+    });
+
+    describe('Success cases', () => {
+      it('should return 200 with user details and token when login is successful', async () => {
+        let testUsername = 'testuser';
+        let correctPassword = bcrypt.hashSync(sampleReq.body.password, 10);
+        user.User.findOne.mockResolvedValue({
+          _id: '123',
+          username: testUsername,
+          email: sampleReq.body.email.trim().toLowerCase(),
+          password: correctPassword,
+        });
+        authUtil.generateToken.mockReturnValue('JWT_TOKEN');
+
+        await sut(sampleReq, mockResponse);
+
+        expect(authUtil.generateToken).toHaveBeenCalledWith(
+          expect.objectContaining({
+            _id: '123',
+            username: testUsername,
+            email: sampleReq.body.email.trim().toLowerCase(),
+          })
+        );
+        expect(mockResponse.status).toHaveBeenCalledWith(200);
+        expect(mockResponse.json).toHaveBeenCalledWith({
+          userDetails: {
+            email: sampleReq.body.email.trim().toLowerCase(),
+            username: testUsername,
+            token: 'JWT_TOKEN',
+          },
+        });
+        expect(compareSpy).toHaveBeenCalledWith(
+          sampleReq.body.password,
+          correctPassword
+        );
       });
     });
   });
