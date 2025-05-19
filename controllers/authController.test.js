@@ -1,5 +1,6 @@
 import { register, login } from './authController.js';
 import bcrypt from 'bcryptjs';
+import { AUTH_MESSAGES } from '../constants/auth.js';
 
 vi.mock('../models/user.js', () => ({
   User: {
@@ -51,7 +52,7 @@ describe('Auth Controller', () => {
 
         expect(mockResponse.status).toHaveBeenCalledWith(400);
         expect(mockResponse.json).toHaveBeenCalledWith({
-          message: 'User already exists',
+          message: AUTH_MESSAGES.USER_EXISTS,
         });
         expect(user.User.exists).toHaveBeenCalledWith({
           email: sampleReq.body.email.trim().toLowerCase(),
@@ -67,7 +68,7 @@ describe('Auth Controller', () => {
 
         expect(mockResponse.status).toHaveBeenCalledWith(500);
         expect(mockResponse.json).toHaveBeenCalledWith({
-          message: 'Server error occurred',
+          message: AUTH_MESSAGES.SERVER_ERROR,
         });
         expect(user.User.exists).toHaveBeenCalledWith({
           email: sampleReq.body.email.trim().toLowerCase(),
@@ -84,7 +85,7 @@ describe('Auth Controller', () => {
 
         expect(mockResponse.status).toHaveBeenCalledWith(500);
         expect(mockResponse.json).toHaveBeenCalledWith({
-          message: 'Server error occurred',
+          message: AUTH_MESSAGES.SERVER_ERROR,
         });
         expect(user.User.exists).toHaveBeenCalledWith({
           email: sampleReq.body.email.trim().toLowerCase(),
@@ -155,7 +156,7 @@ describe('Auth Controller', () => {
 
         expect(mockResponse.status).toHaveBeenCalledWith(400);
         expect(mockResponse.json).toHaveBeenCalledWith({
-          message: 'Email or password is incorrect',
+          message: AUTH_MESSAGES.EMAIL_OR_PASSWORD_INCORRECT,
         });
         expect(compareSpy).not.toHaveBeenCalled();
       });
@@ -167,7 +168,7 @@ describe('Auth Controller', () => {
 
         expect(mockResponse.status).toHaveBeenCalledWith(500);
         expect(mockResponse.json).toHaveBeenCalledWith({
-          message: 'Server error occurred',
+          message: AUTH_MESSAGES.SERVER_ERROR,
         });
         expect(compareSpy).not.toHaveBeenCalled();
       });
@@ -182,7 +183,7 @@ describe('Auth Controller', () => {
 
         expect(mockResponse.status).toHaveBeenCalledWith(400);
         expect(mockResponse.json).toHaveBeenCalledWith({
-          message: 'Email or password is incorrect',
+          message: AUTH_MESSAGES.EMAIL_OR_PASSWORD_INCORRECT,
         });
         expect(compareSpy).toHaveBeenCalledWith(
           sampleReq.body.password,

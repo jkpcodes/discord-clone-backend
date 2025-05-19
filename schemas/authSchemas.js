@@ -24,6 +24,10 @@ const emailValidation = Joi.string().trim().email().required().messages({
   'any.required': 'Email is required',
 });
 
+/**
+ * Validation schema for /auth/register endpoint
+ * @type {Joi.ObjectSchema}
+ */
 export const registerSchema = Joi.object({
   username: Joi.string()
     .trim()
@@ -39,6 +43,10 @@ export const registerSchema = Joi.object({
   password: passwordValidation,
 });
 
+/**
+ * Validation schema for /auth/login endpoint
+ * @type {Joi.ObjectSchema}
+ */
 export const loginSchema = Joi.object({
   email: emailValidation,
   password: passwordValidation,

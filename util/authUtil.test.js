@@ -6,6 +6,7 @@ vi.mock('jsonwebtoken', () => ({
 }));
 
 import jwt from 'jsonwebtoken';
+import { AUTH_MESSAGES } from '../constants/auth.js';
 import * as authUtil from './authUtil.js';
 
 describe('Auth Util', () => {
@@ -102,7 +103,7 @@ describe('Auth Util', () => {
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({
-        message: 'Invalid or expired token',
+        message: AUTH_MESSAGES.INVALID_TOKEN,
       });
       expect(next).not.toHaveBeenCalled();
       expect(jwt.verify).toHaveBeenCalledWith(
