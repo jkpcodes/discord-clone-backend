@@ -91,48 +91,6 @@ describe('User Model', () => {
         }
       });
     });
-
-    it('should return error when password does not contain uppercase letter', async () => {
-      const user = new User({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'password123',
-      });
-
-      try {
-        await user.validate();
-      } catch (error) {
-        expect(error.errors.password).toBeDefined();
-      }
-    });
-
-    it('should return error when password does not contain lowercase letter', async () => {
-      const user = new User({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'PASSWORD123',
-      });
-
-      try {
-        await user.validate();
-      } catch (error) {
-        expect(error.errors.password).toBeDefined();
-      }
-    });
-
-    it('should return error when password does not contain number', async () => {
-      const user = new User({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'Password',
-      });
-
-      try {
-        await user.validate();
-      } catch (error) {
-        expect(error.errors.password).toBeDefined();
-      }
-    });
   });
 
   describe('Success User Schema validation', () => {
