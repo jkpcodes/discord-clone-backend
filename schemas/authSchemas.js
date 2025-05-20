@@ -49,5 +49,7 @@ export const registerSchema = Joi.object({
  */
 export const loginSchema = Joi.object({
   email: emailValidation,
-  password: passwordValidation,
+  password: Joi.string().required().messages({
+    'any.required': 'Password is required',
+  }), // We don't apply any validation for password on login, we just need to check if it's present
 });

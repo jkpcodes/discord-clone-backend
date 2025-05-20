@@ -233,21 +233,6 @@ describe('Auth Routes', async () => {
         expect(res.error.text).toContain('Password is required');
         expect(login).not.toHaveBeenCalled();
       });
-
-      it('should return 400 when password is more than 30 characters', async () => {
-        const res = await request(app)
-          .post(sut)
-          .send({
-            email: 'test@example.com',
-            password: 'Password123'.repeat(3),
-          });
-
-        expect(res.status).toBe(400);
-        expect(res.error.text).toContain(
-          'Password cannot exceed 30 characters'
-        );
-        expect(login).not.toHaveBeenCalled();
-      });
     });
 
     describe('Valid Login Request', () => {
