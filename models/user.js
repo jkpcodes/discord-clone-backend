@@ -2,8 +2,6 @@ import mongoose from 'mongoose';
 import {
   USER_NAME_MIN_LENGTH,
   USER_NAME_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH,
-  PASSWORD_MAX_LENGTH,
 } from '../constants/validators.js';
 
 const userSchema = new mongoose.Schema({
@@ -31,8 +29,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: PASSWORD_MIN_LENGTH,
-    maxlength: PASSWORD_MAX_LENGTH,
     validate: {
       validator: (v) => {
         return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,30}$/.test(v);

@@ -13,7 +13,7 @@ const passwordValidation = Joi.string()
   .required()
   .messages({
     'string.pattern.base':
-      'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+    'Password must contain at least one uppercase letter, one lowercase letter, and one number',
     'string.min': 'Password must be at least 8 characters long',
     'string.max': 'Password cannot exceed 30 characters',
     'any.required': 'Password is required',
