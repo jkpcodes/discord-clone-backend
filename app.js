@@ -6,15 +6,42 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import authRoutes from './routes/authRoutes.js';
 
-// Load environment variables from .env file
-dotenv.config();
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV === 'dev') {
+  dotenv.config({ path: '.env.dev' });
+} else if (process.env.NODE_ENV === 'test') {
+  dotenv.config({ path: '.env.test' });
+} else {
+  dotenv.config();
+}
+
+// Define allowed origins
+const allowedOrigins = [ 
+  process.env.FRONTEND_URL,
+].filter(Boolean); // Remove any undefined values
 
 console.log('process.env.MONGO_URI', process.env.MONGO_URI);
 console.log('process.env.JWT_SECRET', process.env.JWT_SECRET);
+console.log('Allowed Origins:', allowedOrigins);
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(helmet());
 app.use(express.json());
 

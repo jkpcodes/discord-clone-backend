@@ -8,8 +8,8 @@ const validator = createValidator({});
 
 const router = Router();
 
-// 👇 Only apply rate limit when not in test mode
-if (process.env.NODE_ENV !== 'test') {
+// 👇 Only apply rate limit when not in development or test mode
+if (process.env.NODE_ENV !== 'dev' && process.env.NODE_ENV !== 'test') {
   router.post('/register', rateLimiter, validator.body(registerSchema), register);
   router.post('/login', rateLimiter, validator.body(loginSchema), login);
 } else {
