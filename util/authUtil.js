@@ -54,3 +54,24 @@ export const rateLimiter = rateLimit({
   max: 5,
   message: AUTH_MESSAGES.TOO_MANY_REQUESTS,
 });
+
+/**
+ * Verifies the socket token
+ * @param {*} socket - The socket object
+ * @param {*} next - The next middleware function
+ * @returns - The next middleware function
+ */
+export const verifySocketToken = (socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    return next(new Error('Authentication error'));
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.user = decoded;
+    next();
+  } catch (error) {
+    next(new Error('Authentication error'));
+  }
+};

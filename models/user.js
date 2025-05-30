@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  friends: [{
+    type: mongoose.Schema.Types.Object,
+    ref: 'User',
+  }],
 });
 
-export const User = mongoose.model('user', userSchema);
+export const User = mongoose.model('User', userSchema);

@@ -5,6 +5,9 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import authRoutes from './routes/authRoutes.js';
+import friendRoutes from './routes/friendRoutes.js';
+import { Server as SocketIOServer } from 'socket.io';
+import { registerSocketServer } from './socket/index.js';
 
 // Load environment variables based on NODE_ENV
 if (process.env.NODE_ENV === 'dev') {
@@ -48,7 +51,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
-
+app.use('/api/friend', friendRoutes);
 // Basic 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });
@@ -57,6 +60,15 @@ app.use((req, res) => {
 const PORT = process.env.PORT || process.env.API_PORT;
 
 const server = http.createServer(app);
+
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL,
+  }
+});
+
+
+registerSocketServer(io);
 
 mongoose
   .connect(process.env.MONGO_URI, {

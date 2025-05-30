@@ -22,7 +22,8 @@
     "helmet": "^8.1.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.14.3"
+    "mongoose": "^8.14.3",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^3.1.3",
