@@ -5,6 +5,7 @@ import {
   updatedFriendInvitations,
   updatedSentInvitations,
   updatedFriendsList,
+  updatedOnlineFriends,
 } from '../socket/friends.js';
 import mongoose from 'mongoose';
 import { sendMessageToActiveUserConnections } from '../socket/socketStore.js';
@@ -128,7 +129,7 @@ export const acceptFriend = async (req, res) => {
     // Add sender to the current user's friends list
     await User.updateOne(
       { _id: receiverId },
-      { $push: { friends: senderId } },
+      { $push: { friends: invitation.senderId._id } },
       { new: true },
       { session }
     );
@@ -136,7 +137,7 @@ export const acceptFriend = async (req, res) => {
     // Add current user to the sender user's friends list
     await User.updateOne(
       { _id: senderId },
-      { $push: { friends: receiverId } },
+      { $push: { friends: invitation.receiverId._id } },
       { new: true },
       { session }
     );
@@ -144,22 +145,23 @@ export const acceptFriend = async (req, res) => {
     // Delete the invitation from the database
     await FriendInvitation.findByIdAndDelete(id, { session });
 
-    await session.commitTransaction();
-
     // Update the sent invitations and friends list for the receiver
     sendMessageToActiveUserConnections(
       receiverId,
       updatedFriendInvitations,
-      updatedFriendsList
+      updatedFriendsList,
+      updatedOnlineFriends
     );
 
     // Update the sent invitations and friends list for the sender
     sendMessageToActiveUserConnections(
       senderId,
       updatedSentInvitations,
-      updatedFriendsList
+      updatedFriendsList,
+      updatedOnlineFriends
     );
 
+    await session.commitTransaction();
     return res.status(200).json({
       message: FRIEND_ROUTES_MESSAGES.FRIEND_INVITATION_ACCEPTED,
     });

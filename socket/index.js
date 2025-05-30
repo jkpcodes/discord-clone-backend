@@ -21,15 +21,9 @@ export const registerSocketServer = (io) => {
     verifySocketToken(socket, next);
   });
 
-  const emitOnlineUsers = () => {
-    const onlineUsers = getOnlineUsers();
-    io.emit('online-users', onlineUsers);
-  };
-
   io.on('connection', (socket) => {
     console.log('a user connected', socket.id);
     newConnectionHandler(socket);
-    // friendHandler(io, socket);
 
     socket.on('disconnect', () => {
       console.log('a socketID disconnected', socket.id);
