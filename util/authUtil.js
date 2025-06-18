@@ -63,6 +63,8 @@ export const rateLimiter = rateLimit({
  */
 export const verifySocketToken = (socket, next) => {
   const token = socket.handshake.auth?.token;
+  const instanceId = socket.handshake.auth?.instanceId;
+
   if (!token) {
     return next(new Error('Authentication error'));
   }
@@ -70,6 +72,7 @@ export const verifySocketToken = (socket, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     socket.user = decoded;
+    socket.instanceId = instanceId;
     next();
   } catch (error) {
     next(new Error('Authentication error'));

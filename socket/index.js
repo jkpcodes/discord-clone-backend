@@ -1,5 +1,6 @@
 import { verifySocketToken } from '../util/authUtil.js';
-import { newConnectionHandler, disconnectHandler } from './connectionHandler.js';
+import { newConnectionHandler, disconnectHandler, directMessageHandler } from './connectionHandler.js';
+import { getChatHistory } from './chat.js';
 // import { friendHandler } from './friends.js';
 
 let io = null;
@@ -24,6 +25,14 @@ export const registerSocketServer = (io) => {
   io.on('connection', (socket) => {
     console.log('a user connected', socket.id);
     newConnectionHandler(socket);
+
+    socket.on('direct:message', (messageData) => {
+      directMessageHandler(socket, messageData);
+    });
+
+    socket.on('direct:getChatHistory', (friendId) => {
+      getChatHistory(socket, friendId);
+    });
 
     socket.on('disconnect', () => {
       console.log('a socketID disconnected', socket.id);

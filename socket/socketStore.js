@@ -1,7 +1,18 @@
 const connectedClients = new Map();
 
-export const addToClientMap = (socketId, userId) => {
-  connectedClients.set(socketId, userId);
+export const addToClientMap = (socketId, userId, instanceId) => {
+  console.log('addToClientMap: ', socketId, userId);
+  const clientInstanceId = `${userId}:${instanceId}`;
+
+  const existingClient = Array.from(connectedClients.entries()).find(
+    ([_, value]) => value.clientInstanceId === clientInstanceId
+  )?.[0];
+
+  if (existingClient) {
+    connectedClients.delete(existingClient);
+  }
+
+  connectedClients.set(socketId, { userId, clientInstanceId });
 };
 
 export const removeFromClientMap = (socketId) => {
@@ -14,7 +25,9 @@ export const logConnectedClients = () => {
 
 export const getOnlineUsers = () => {
   // Use Set to get unique user IDs
-  const uniqueUserIds = new Set(connectedClients.values());
+  const uniqueUserIds = new Set(
+    Array.from(connectedClients.values()).map((client) => client.userId)
+  );
   return Array.from(uniqueUserIds);
 };
 
@@ -25,7 +38,7 @@ export const getOnlineUsers = () => {
  */
 export const getActiveConnectionsByUserId = (userId) => {
   return Array.from(connectedClients.entries())
-    .filter(([_, id]) => id === userId)
+    .filter(([_, client]) => client.userId === userId)
     .map(([socketId, _]) => socketId);
 };
 

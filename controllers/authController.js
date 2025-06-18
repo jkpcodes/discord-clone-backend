@@ -35,6 +35,7 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       userDetails: {
+        _id: user._id.toString(),
         email: savedEmail,
         username: savedUsername,
         token,
@@ -69,7 +70,12 @@ export const login = async (req, res) => {
     const token = generateToken(user);
 
     res.status(200).json({
-      userDetails: { email: user.email, username: user.username, token },
+      userDetails: {
+        _id: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        token,
+      },
     });
   } catch (error) {
     console.error('Login error: ', error);

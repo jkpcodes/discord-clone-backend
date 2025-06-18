@@ -8,4 +8,5 @@ export const FRIEND_ROUTES_MESSAGES = {
   FRIEND_INVITATION_SUCCESS: 'Friend invitation sent successfully',
   FRIEND_INVITATION_ACCEPTED: 'Friend request accepted',
   FRIEND_INVITATION_REJECTED: 'Friend request rejected',
+  FRIEND_INVITATION_CANCELED: 'Friend request invitation canceled',
 };

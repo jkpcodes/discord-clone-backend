@@ -175,7 +175,7 @@ export const acceptFriend = async (req, res) => {
   }
 };
 
-export const rejectFriend = async (req, res) => {
+export const rejectFriend = async (req, res, mode = 'reject') => {
   const { id } = req.body;
   const { user } = req;
 
@@ -195,7 +195,7 @@ export const rejectFriend = async (req, res) => {
 
     // Update the pending invitations for the receiver
     sendMessageToActiveUserConnections(
-      user._id.toString(),
+      invitation.receiverId._id.toString(),
       updatedFriendInvitations
     );
 
@@ -206,7 +206,10 @@ export const rejectFriend = async (req, res) => {
     );
 
     res.status(200).json({
-      message: FRIEND_ROUTES_MESSAGES.FRIEND_INVITATION_REJECTED,
+      message:
+        mode === 'reject'
+          ? FRIEND_ROUTES_MESSAGES.FRIEND_INVITATION_REJECTED
+          : FRIEND_ROUTES_MESSAGES.FRIEND_INVITATION_CANCELED,
     });
   } catch (error) {
     console.error('Reject friend error: ', error);
