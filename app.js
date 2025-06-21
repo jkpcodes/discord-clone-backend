@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import authRoutes from './routes/authRoutes.js';
 import friendRoutes from './routes/friendRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
 import { Server as SocketIOServer } from 'socket.io';
 import { registerSocketServer } from './socket/index.js';
 
@@ -52,6 +53,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/friend', friendRoutes);
+app.use('/api/message', messageRoutes);
 // Basic 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });

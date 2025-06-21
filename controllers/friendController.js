@@ -9,6 +9,7 @@ import {
 } from '../socket/friends.js';
 import mongoose from 'mongoose';
 import { sendMessageToActiveUserConnections } from '../socket/socketStore.js';
+import { Conversation } from '../models/conversation.js';
 
 export const inviteFriend = async (req, res) => {
   const { email } = req.body;
@@ -144,6 +145,12 @@ export const acceptFriend = async (req, res) => {
 
     // Delete the invitation from the database
     await FriendInvitation.findByIdAndDelete(id, { session });
+
+    // Create empty conversation between sender and receiver
+    await Conversation.create({
+      participants: [invitation.senderId._id, invitation.receiverId._id],
+      messages: [],
+    }, { session });
 
     // Update the sent invitations and friends list for the receiver
     sendMessageToActiveUserConnections(

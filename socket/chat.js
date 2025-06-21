@@ -83,3 +83,16 @@ export const getChatHistory = async (socket, friendId) => {
     console.log(error);
   }
 };
+
+/**
+ * Sends newly created message to a user
+ * @param {*} userId
+ * @param {*} messageData { conversationId, message }
+ */
+export const sendMessageToUser = async (userActiveConnections, messageData) => {
+  try {
+    getIO().to(userActiveConnections).emit('chat:addedMessage', messageData);
+  } catch (error) {
+    console.log(error);
+  }
+};
