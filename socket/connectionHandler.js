@@ -16,6 +16,7 @@ import { Conversation } from '../models/conversation.js';
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { updatedConversation, addedMessage } from './chat.js';
+import { disconnectUserFromAllVoiceChannels } from './channelServer.js';
 
 export const newConnectionHandler = async (socket) => {
   console.log('newConnectionHandler: ', socket.user._id);
@@ -36,6 +37,8 @@ export const disconnectHandler = async (socket) => {
   logConnectedClients();
 
   updatedOfflineStatus(socket.user._id);
+  // Disconnect user from connected voice channels
+  disconnectUserFromAllVoiceChannels(socket.user._id);
 };
 
 export const directMessageHandler = async (socket, messageData) => {

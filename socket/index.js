@@ -1,6 +1,7 @@
 import { verifySocketToken } from '../util/authUtil.js';
 import { newConnectionHandler, disconnectHandler, directMessageHandler } from './connectionHandler.js';
 import { getChatHistory } from './chat.js';
+import { joinServerVoiceChannel, leaveServerVoiceChannel } from './channelServer.js';
 // import { friendHandler } from './friends.js';
 
 let io = null;
@@ -37,6 +38,14 @@ export const registerSocketServer = (io) => {
     socket.on('disconnect', () => {
       console.log('a socketID disconnected', socket.id);
       disconnectHandler(socket);
+    });
+
+    socket.on('call:joinServerVoiceChannel', (serverId) => {
+      joinServerVoiceChannel(socket, serverId);
+    });
+
+    socket.on('call:leaveServerVoiceChannel', (serverId) => {
+      leaveServerVoiceChannel(socket, serverId);
     });
   });
 };

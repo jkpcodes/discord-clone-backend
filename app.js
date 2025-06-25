@@ -9,6 +9,7 @@ import friendRoutes from './routes/friendRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import { Server as SocketIOServer } from 'socket.io';
 import { registerSocketServer } from './socket/index.js';
+import serverRoutes from './routes/serverRoutes.js';
 
 // Load environment variables based on NODE_ENV
 if (process.env.NODE_ENV === 'dev') {
@@ -20,9 +21,7 @@ if (process.env.NODE_ENV === 'dev') {
 }
 
 // Define allowed origins
-const allowedOrigins = [ 
-  process.env.FRONTEND_URL,
-].filter(Boolean); // Remove any undefined values
+const allowedOrigins = [process.env.FRONTEND_URL].filter(Boolean); // Remove any undefined values
 
 console.log('process.env.MONGO_URI', process.env.MONGO_URI);
 console.log('process.env.JWT_SECRET', process.env.JWT_SECRET);
@@ -30,21 +29,24 @@ console.log('Allowed Origins:', allowedOrigins);
 
 const app = express();
 
-app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, postman)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl, postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          'The CORS policy for this site does not allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 app.use(helmet());
 app.use(express.json());
@@ -54,6 +56,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/friend', friendRoutes);
 app.use('/api/message', messageRoutes);
+app.use('/api/server', serverRoutes);
 // Basic 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });
@@ -66,9 +69,8 @@ const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
     origin: process.env.FRONTEND_URL,
-  }
+  },
 });
-
 
 registerSocketServer(io);
 
