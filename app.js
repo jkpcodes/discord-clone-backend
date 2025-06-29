@@ -21,7 +21,10 @@ if (process.env.NODE_ENV === 'dev') {
 }
 
 // Define allowed origins
-const allowedOrigins = [process.env.FRONTEND_URL].filter(Boolean); // Remove any undefined values
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+].filter(Boolean); // Remove any undefined values
 
 console.log('process.env.MONGO_URI', process.env.MONGO_URI);
 console.log('process.env.JWT_SECRET', process.env.JWT_SECRET);
@@ -57,6 +60,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/friend', friendRoutes);
 app.use('/api/message', messageRoutes);
 app.use('/api/server', serverRoutes);
+
+// Add Railway health check endpoint
+app.get('/api/auth/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 // Basic 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });
@@ -68,7 +77,18 @@ const server = http.createServer(app);
 
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  },
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  // Allow all requests to connect to the socket
+  allowRequest: (req, callback) => {
+    callback(null, true);
   },
 });
 

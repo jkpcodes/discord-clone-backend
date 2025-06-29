@@ -8,7 +8,8 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
-    "dev": "cross-env NODE_ENV=dev node --watch app.js"
+    "dev": "cross-env NODE_ENV=dev node --watch app.js",
+    "start": "node app.js"
   },
   "author": "jkpcodes",
   "license": "ISC",
