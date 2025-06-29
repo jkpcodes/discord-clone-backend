@@ -1,7 +1,16 @@
 import { verifySocketToken } from '../util/authUtil.js';
-import { newConnectionHandler, disconnectHandler, directMessageHandler } from './connectionHandler.js';
+import {
+  newConnectionHandler,
+  disconnectHandler,
+  directMessageHandler,
+} from './connectionHandler.js';
 import { getChatHistory } from './chat.js';
-import { joinServerVoiceChannel, leaveServerVoiceChannel } from './channelServer.js';
+import {
+  joinServerVoiceChannel,
+  leaveServerVoiceChannel,
+  initializeWebRTCConnection,
+  signalDataHandler,
+} from './channelServer.js';
 // import { friendHandler } from './friends.js';
 
 let io = null;
@@ -24,7 +33,6 @@ export const registerSocketServer = (io) => {
   });
 
   io.on('connection', (socket) => {
-    console.log('a user connected', socket.id);
     newConnectionHandler(socket);
 
     socket.on('direct:message', (messageData) => {
@@ -46,6 +54,14 @@ export const registerSocketServer = (io) => {
 
     socket.on('call:leaveServerVoiceChannel', (serverId) => {
       leaveServerVoiceChannel(socket, serverId);
+    });
+
+    socket.on('call:initializeWebRTCConnection', (data) => {
+      initializeWebRTCConnection(socket, data.userSocketId);
+    });
+
+    socket.on('call:signalPeerData', (data) => {
+      signalDataHandler(socket, data);
     });
   });
 };

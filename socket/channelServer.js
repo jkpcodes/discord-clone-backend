@@ -20,23 +20,33 @@ const serverVoiceChannels = new Map();
  * @param {*} serverId
  */
 export const joinServerVoiceChannel = async (socket, serverId) => {
-  console.log('joinServerVoiceChannel: ', serverId);
   const { _id, username, email } = socket.user;
   const userId = _id.toString();
+  const newParticipant = { _id: userId, username, email, socketId: socket.id };
 
   const serverVoiceChannel = serverVoiceChannels.get(serverId);
   if (!serverVoiceChannel) {
     serverVoiceChannels.set(serverId, {
-      voiceChannel: [{ _id: userId, username, email, socketId: socket.id }],
+      voiceChannel: [newParticipant],
     });
   } else {
     // Check if user is already in the voice channel, and if the voice channel is not full (4 participants)
     if (
       !serverVoiceChannel.voiceChannel.some(
         (participant) => participant._id === userId
-      ) && serverVoiceChannel.voiceChannel.length < MAX_VOICE_CHANNEL_PARTICIPANTS
+      ) &&
+      serverVoiceChannel.voiceChannel.length < MAX_VOICE_CHANNEL_PARTICIPANTS
     ) {
-      serverVoiceChannel.voiceChannel.push({ _id: userId, username, email, socketId: socket.id });
+      // Send information to connected users in voice channel to prepare for incoming webRTC connection
+      const userActiveSocketIds = serverVoiceChannel.voiceChannel.map(
+        (participant) => participant.socketId
+      );
+
+      getIO().to(userActiveSocketIds).emit('call:prepareWebRTCConnection', {
+        userSocketId: newParticipant.socketId,
+      });
+
+      serverVoiceChannel.voiceChannel.push(newParticipant);
     }
   }
   sendUpdatedVoiceChannelParticipants(serverId);
@@ -44,13 +54,11 @@ export const joinServerVoiceChannel = async (socket, serverId) => {
   const server = await Server.findById(serverId).populate('members', '_id');
 
   server.members.forEach((member) => {});
-  console.log(serverVoiceChannels);
 };
 
 export const leaveServerVoiceChannel = (socket, serverId) => {
-  console.log('leaveServerVoiceChannel: ', serverId);
   const socketId = socket.id;
-  const { _id, username, email } = socket.user;
+  const { _id } = socket.user;
   const userId = _id.toString();
 
   const serverVoiceChannel = serverVoiceChannels.get(serverId);
@@ -66,8 +74,7 @@ export const leaveServerVoiceChannel = (socket, serverId) => {
     }
   }
   sendUpdatedVoiceChannelParticipants(serverId);
-
-  console.log(serverVoiceChannels);
+  sendUserLeftVoiceChannel(serverVoiceChannel, socketId);
 };
 
 export const getVoiceChannelParticipants = (serverId) => {
@@ -75,7 +82,7 @@ export const getVoiceChannelParticipants = (serverId) => {
   return serverVoiceChannel?.voiceChannel || [];
 };
 
-export const disconnectUserFromAllVoiceChannels = (userId) => {
+export const disconnectUserFromAllVoiceChannels = (userId, socketId) => {
   serverVoiceChannels.forEach((serverVoiceChannel, serverId) => {
     serverVoiceChannel.voiceChannel = serverVoiceChannel.voiceChannel.filter(
       (participant) => participant._id !== userId
@@ -86,15 +93,27 @@ export const disconnectUserFromAllVoiceChannels = (userId) => {
     }
 
     sendUpdatedVoiceChannelParticipants(serverId);
+    sendUserLeftVoiceChannel(serverVoiceChannel, socketId);
   });
-  console.log(serverVoiceChannels);
 };
+
+const sendUserLeftVoiceChannel = (serverVoiceChannel, socketId) => {
+  // If there are still participants in the voice channel, send a message to the remaining participants regarding the user leaving the voice channel
+  if (serverVoiceChannel.voiceChannel.length > 0) {
+    const activeParticipantSocketIds = serverVoiceChannel.voiceChannel.map(
+      (participant) => participant.socketId
+    );
+    getIO().to(activeParticipantSocketIds).emit('call:userLeftVoiceChannel', {
+      userSocketId: socketId,
+    });
+  }
+}
 
 /**
  * Send updated voice channel participants to all server members
  *
- * @param {*} serverId 
- * @returns 
+ * @param {*} serverId
+ * @returns
  */
 const sendUpdatedVoiceChannelParticipants = async (serverId) => {
   const server = await Server.findById(serverId);
@@ -103,9 +122,25 @@ const sendUpdatedVoiceChannelParticipants = async (serverId) => {
   }
   server.members.forEach((participantId) => {
     const userActiveConnections = getActiveConnectionsByUserId(participantId);
-    getIO().to(userActiveConnections).emit('call:updateVoiceChannelParticipants', {
-      serverId,
-      voiceChannel: serverVoiceChannels.get(serverId)?.voiceChannel || [],
-    });
+    getIO()
+      .to(userActiveConnections)
+      .emit('call:updateVoiceChannelParticipants', {
+        serverId,
+        voiceChannel: serverVoiceChannels.get(serverId)?.voiceChannel || [],
+      });
   });
+};
+
+export const initializeWebRTCConnection = (socket, userSocketId) => {
+  const initData = { userSocketId: socket.id };
+  socket.to(userSocketId).emit('call:initializeWebRTCConnection', initData);
+};
+
+export const signalDataHandler = (socket, data) => {
+  const { userSocketId, signal } = data;
+
+  const userActiveConnections = getActiveConnectionsByUserId(userSocketId);
+  getIO()
+    .to(userActiveConnections)
+    .emit('call:signalPeerData', { signal, userSocketId: socket.id });
 };

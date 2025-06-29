@@ -1,7 +1,6 @@
 const connectedClients = new Map();
 
 export const addToClientMap = (socketId, userId, instanceId) => {
-  console.log('addToClientMap: ', socketId, userId);
   const clientInstanceId = `${userId}:${instanceId}`;
 
   const existingClient = Array.from(connectedClients.entries()).find(
@@ -20,7 +19,7 @@ export const removeFromClientMap = (socketId) => {
 };
 
 export const logConnectedClients = () => {
-  console.log(connectedClients);
+  // console.log(connectedClients);
 };
 
 export const getOnlineUsers = () => {

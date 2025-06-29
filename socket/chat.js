@@ -22,9 +22,6 @@ export const updatedConversation = async (
         select: '_id username email',
       });
 
-    console.log('populate conversation: ', conversation);
-    console.log('userActiveConnections: ', userActiveConnections);
-
     if (conversation) {
       getIO()
         .to(userActiveConnections)

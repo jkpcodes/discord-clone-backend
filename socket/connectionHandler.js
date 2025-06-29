@@ -19,7 +19,6 @@ import { updatedConversation, addedMessage } from './chat.js';
 import { disconnectUserFromAllVoiceChannels } from './channelServer.js';
 
 export const newConnectionHandler = async (socket) => {
-  console.log('newConnectionHandler: ', socket.user._id);
   addToClientMap(socket.id, socket.user._id, socket.instanceId);
   logConnectedClients();
 
@@ -38,14 +37,13 @@ export const disconnectHandler = async (socket) => {
 
   updatedOfflineStatus(socket.user._id);
   // Disconnect user from connected voice channels
-  disconnectUserFromAllVoiceChannels(socket.user._id);
+  disconnectUserFromAllVoiceChannels(socket.user._id, socket.id);
 };
 
 export const directMessageHandler = async (socket, messageData) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    console.log('directMessageHandler: ', messageData);
     const senderId = socket.user._id;
     const senderObjectId = ObjectId.createFromHexString(senderId);
 
@@ -86,8 +84,6 @@ export const directMessageHandler = async (socket, messageData) => {
 
       conversation = result ? result[0] : null;
     }
-
-    console.log('conversation: ', conversation);
 
     const conversationId = conversation._id.toString();
 
