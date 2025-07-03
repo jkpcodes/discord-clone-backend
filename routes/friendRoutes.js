@@ -9,6 +9,7 @@ import {
   inviteFriend,
   acceptFriend,
   rejectFriend,
+  getFriendMessages,
 } from '../controllers/friendController.js';
 
 const validator = createValidator({});
@@ -32,5 +33,10 @@ router.post(
   validator.body(acceptRejectFriendSchema),
   rejectFriend
 );
+router.get(
+  '/direct-messages',
+  authenticateToken,
+  getFriendMessages
+)
 
 export default router;

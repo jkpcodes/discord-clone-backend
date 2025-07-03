@@ -10,6 +10,7 @@ import {
 import mongoose from 'mongoose';
 import { sendMessageToActiveUserConnections } from '../socket/socketStore.js';
 import { Conversation } from '../models/conversation.js';
+import { ObjectId } from 'mongodb';
 
 export const inviteFriend = async (req, res) => {
   const { email } = req.body;
@@ -147,10 +148,13 @@ export const acceptFriend = async (req, res) => {
     await FriendInvitation.findByIdAndDelete(id, { session });
 
     // Create empty conversation between sender and receiver
-    await Conversation.create({
-      participants: [invitation.senderId._id, invitation.receiverId._id],
-      messages: [],
-    }, { session });
+    await Conversation.create(
+      {
+        participants: [invitation.senderId._id, invitation.receiverId._id],
+        messages: [],
+      },
+      { session }
+    );
 
     // Update the sent invitations and friends list for the receiver
     sendMessageToActiveUserConnections(
@@ -222,6 +226,53 @@ export const rejectFriend = async (req, res, mode = 'reject') => {
     console.error('Reject friend error: ', error);
     res.status(500).json({
       message: FRIEND_ROUTES_MESSAGES.FRIEND_INVITATION_SERVER_ERROR,
+    });
+  }
+};
+
+export const getFriendMessages = async (req, res) => {
+  const { user } = req;
+  const currentUserObjectId = ObjectId.createFromHexString(user._id);
+
+  try {
+    const UserConversations = await Conversation.find({
+      participants: { $in: [currentUserObjectId] },
+      messages: { $exists: true, $ne: [] },
+    })
+      .populate({
+        path: 'messages',
+        options: {
+          sort: {
+            date: -1,
+          },
+          perDocumentLimit: 1,
+        },
+      })
+      .populate({
+        path: 'participants',
+        select: '_id username email',
+      });
+
+    const FormattedConversations = UserConversations.map((conversation) => {
+      return {
+        _id: conversation._id,
+        friend: conversation.participants.find(
+          (participant) => participant._id.toString() !== user._id
+        ),
+        lastMessage:
+          conversation.messages.length > 0 ? conversation.messages[0] : null,
+      };
+    }).sort((a, b) => {
+      const aDate = a.lastMessage ? new Date(a.lastMessage.date) : new Date(0);
+      const bDate = b.lastMessage ? new Date(b.lastMessage.date) : new Date(0);
+      return bDate.getTime() - aDate.getTime();
+    });
+
+    res.status(200).json(FormattedConversations);
+  } catch (error) {
+    console.error('Get friend messages error: ', error);
+    res.status(500).json({
+      message: 'Failed to get friend direct messages',
     });
   }
 };

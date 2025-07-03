@@ -55,7 +55,7 @@ export const getDirectMessages = async (req, res) => {
     messages: conversation.messages,
     participants: conversation.participants,
     pagination: {
-      skip: parseInt(skip),
+      skip: parseInt(skip) + conversation.messages.length,
       take: parseInt(take),
       hasMore,
     },
